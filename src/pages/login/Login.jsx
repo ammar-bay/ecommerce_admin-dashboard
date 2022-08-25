@@ -15,7 +15,8 @@ const Login = () => {
   const handleClick = (e) => {
     e.preventDefault();
     login(dispatch, { email, password });
-    user && history.push("/")
+    console.log(user);
+    // user && history.push("/")
   };
 
   return (
