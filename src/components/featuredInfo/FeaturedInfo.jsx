@@ -1,7 +1,7 @@
 import "./featuredInfo.css";
 import { ArrowDownward, ArrowUpward } from "@material-ui/icons";
 import { useEffect, useState } from "react";
-import { userRequest } from "../../requestMethods";
+import axios from "../../utils/axios";
 
 export default function FeaturedInfo() {
   const [income, setIncome] = useState([]);
@@ -10,11 +10,11 @@ export default function FeaturedInfo() {
   useEffect(() => {
     const getIncome = async () => {
       try {
-        const res = await userRequest.get("orders/admin/income");
-        console.log(res);
-        setIncome(res.data);
-        setPerc((res.data[1].total * 100) / res.data[0].total - 100);
-      } catch(err) {
+        const res = await axios.get("orders/admin/income");
+        const sorted_arr = res.data.sort((a, b) => (a._id > b._id ? 1 : -1));
+        setIncome(sorted_arr);
+        setPerc((sorted_arr[1].total * 100) / sorted_arr[0].total - 100);
+      } catch (err) {
         console.log(err);
       }
     };

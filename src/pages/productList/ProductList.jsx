@@ -2,20 +2,38 @@ import "./productList.css";
 import { DataGrid } from "@material-ui/data-grid";
 import { DeleteOutline } from "@material-ui/icons";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { deleteProduct, getProducts } from "../../redux/apiCalls";
+import { useEffect, useState } from "react";
+import axios from "../../utils/axios";
+import { useContext } from "react";
+import { Store } from "../../utils/Store";
 
 export default function ProductList() {
-  const dispatch = useDispatch();
-  const products = useSelector((state) => state.product.products);
-
+  // const dispatch = useDispatch();
+  // const products = useSelector((state) => state.product.products);
+  // const [products, setProducts] = useState([]);
+  const { state, dispatch } = useContext(Store);
   useEffect(() => {
-    getProducts(dispatch);
-  }, [dispatch]);
+    if (!state.products) {
+      try {
+        const getProducts = async () => {
+          const res = await axios.get("/products");
+          // console.log(res);
+          dispatch({ type: "SET_PRODUCTS", payload: res.data });
+          // setProducts(res.data);
+        };
+        getProducts();
+      } catch (error) {}
+    }
+  }, []);
 
-  const handleDelete = (id) => {
-    deleteProduct(id, dispatch);
+  const handleDelete = async (id) => {
+    // console.log(id);
+    dispatch({ type: "DELETE_PRODUCT", payload: id });
+    try {
+      const res = await axios.delete(`/products/${id}`);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const columns = [
@@ -33,7 +51,7 @@ export default function ProductList() {
         );
       },
     },
-    { field: "inStock", headerName: "Stock", width: 200 },
+    { field: "countInStock", headerName: "Stock", width: 200 },
     {
       field: "price",
       headerName: "Price",
@@ -62,7 +80,7 @@ export default function ProductList() {
   return (
     <div className="productList">
       <DataGrid
-        rows={products}
+        rows={state.products || []}
         disableSelectionOnClick
         columns={columns}
         getRowId={(row) => row._id}

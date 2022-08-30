@@ -1,22 +1,31 @@
+import { useContext } from "react";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { login } from "../../redux/apiCalls";
-import { useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
-
+import { Store } from "../../utils/Store";
+import { publicRequest } from "../../utils/axios";
+import { useEffect } from "react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.currentUser);
-  const history = useHistory()
+  const history = useHistory();
+  const { state, dispatch } = useContext(Store);
 
-  const handleClick = (e) => {
+  useEffect(()=>{
+    if(state.user){
+      history.replace("/")
+    }
+  },[])
+
+  const handleClick = async (e) => {
     e.preventDefault();
-    login(dispatch, { email, password });
-    console.log(user);
-    // user && history.push("/")
+    try {
+      const res = await publicRequest.post("/auth/login", { email, password });
+      dispatch({ type: "USER_LOGIN", payload: res.data });
+      history.push("/")
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -41,7 +50,7 @@ const Login = () => {
         placeholder="password"
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button onClick={handleClick} style={{ padding: 10, width:100 }}>
+      <button onClick={handleClick} style={{ padding: 10, width: 100 }}>
         Login
       </button>
     </div>
